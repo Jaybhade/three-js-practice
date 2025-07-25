@@ -74,9 +74,9 @@ const Ground = () => {
           roughnessMap={grassRoughnessTexture}
         />
       </mesh>
-      <pointLight ref={ghost1} args={["#00ffff", 2, 3]} />
-      <pointLight ref={ghost2} args={["#ff00ff", 2, 3]} />
-      <pointLight ref={ghost3} args={["#ffff00", 2, 3]} />
+      <pointLight ref={ghost1} args={["#00ffff", 2, 3]} castShadow />
+      <pointLight ref={ghost2} args={["#ff00ff", 2, 3]} castShadow />
+      <pointLight ref={ghost3} args={["#ffff00", 2, 3]} castShadow />
     </group>
   );
 };
