@@ -3,7 +3,7 @@ import Graves from "./GravesGroup";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
-import Ground from "./Ground/Ground.view";
+import Ground from "./Ground";
 
 const HauntedHouse = () => {
   const [dpr, setDpr] = useState<number>(2);
