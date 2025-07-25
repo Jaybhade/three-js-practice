@@ -1,4 +1,5 @@
 import { useLoader } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import Bushes from "../BushesGroup";
 
@@ -6,53 +7,60 @@ const wallDimensions: number[] = [4, 2.5, 4]; // width height depth
 const coneHeight = 2;
 
 const HouseGroup = () => {
-  const alphaTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/alpha.jpg"
-  );
-  const ambientOcclusionTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/ambientOcclusion.jpg"
-  );
-  const colorTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/color.jpg"
-  );
-  const heightTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/height.jpg"
-  );
-  const metalnessTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/metalness.jpg"
-  );
-  const normalTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/normal.jpg"
-  );
-  const roughnessTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/door/roughness.jpg"
-  );
+  const doorGeometryRef = useRef<THREE.PlaneGeometry>(null);
+  const wallGeometryRef = useRef<THREE.BoxGeometry>(null);
+  const [
+    alphaTexture,
+    ambientOcclusionTexture,
+    colorTexture,
+    heightTexture,
+    metalnessTexture,
+    normalTexture,
+    roughnessTexture,
+  ] = useLoader(THREE.TextureLoader, [
+    "/textures/door/alpha.jpg",
+    "/textures/door/ambientOcclusion.jpg",
+    "/textures/door/color.jpg",
+    "/textures/door/height.jpg",
+    "/textures/door/metalness.jpg",
+    "/textures/door/normal.jpg",
+    "/textures/door/roughness.jpg",
+  ]);
 
-  // bricks texture
+  const [
+    bricksColorTexture,
+    bricksAmbientOcclusionTexture,
+    bricksNormalTexture,
+    bricksRoughnessTexture,
+  ] = useLoader(THREE.TextureLoader, [
+    "/textures/bricks/color.jpg",
+    "/textures/bricks/ambientOcclusion.jpg",
+    "/textures/bricks/normal.jpg",
+    "/textures/bricks/roughness.jpg",
+  ]);
 
-  const bricksColorTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/bricks/color.jpg"
-  );
-  const bricksAmbientOcclusionTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/bricks/ambientOcclusion.jpg"
-  );
-  const bricksNormalTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/bricks/normal.jpg"
-  );
-  const bricksRoughnessTexture = useLoader(
-    THREE.TextureLoader,
-    "/textures/bricks/roughness.jpg"
-  );
+  useEffect(() => {
+    const doorTextures = [alphaTexture, ambientOcclusionTexture, colorTexture, heightTexture, metalnessTexture, normalTexture, roughnessTexture];
+    doorTextures.forEach(texture => {
+      texture.generateMipmaps = true;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+    });
+
+    const brickTextures = [bricksColorTexture, bricksAmbientOcclusionTexture, bricksNormalTexture, bricksRoughnessTexture];
+    brickTextures.forEach(texture => {
+      texture.generateMipmaps = true;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+    });
+
+    if (doorGeometryRef.current) {
+      doorGeometryRef.current.setAttribute('uv2', doorGeometryRef.current.attributes.uv);
+    }
+    if (wallGeometryRef.current) {
+      wallGeometryRef.current.setAttribute('uv2', wallGeometryRef.current.attributes.uv);
+    }
+  }, [alphaTexture, ambientOcclusionTexture, colorTexture, heightTexture, metalnessTexture, normalTexture, roughnessTexture, bricksColorTexture, bricksAmbientOcclusionTexture, bricksNormalTexture, bricksRoughnessTexture]);
 
   return (
     <group>
@@ -63,13 +71,14 @@ const HouseGroup = () => {
         position={[0, 2 * 0.5 - 0.1, wallDimensions[2] * 0.5 + 0.01]}
         receiveShadow
       >
-        <planeGeometry args={[wallDimensions[0] * 0.5, 2, 100, 100]} />
+        <planeGeometry ref={doorGeometryRef} args={[wallDimensions[0] * 0.5, 2, 100, 100]} />
         <meshStandardMaterial
           transparent
           displacementScale={0.1}
           map={colorTexture}
           alphaMap={alphaTexture}
           aoMap={ambientOcclusionTexture}
+          aoMapIntensity={1}
           displacementMap={heightTexture}
           normalMap={normalTexture}
           metalnessMap={metalnessTexture}
@@ -92,12 +101,13 @@ const HouseGroup = () => {
         receiveShadow
       >
         <boxGeometry
+          ref={wallGeometryRef}
           args={[wallDimensions[0], wallDimensions[1], wallDimensions[2]]}
         />
         <meshStandardMaterial 
-          transparent
           map={bricksColorTexture}
           aoMap={bricksAmbientOcclusionTexture}
+          aoMapIntensity={1}
           normalMap={bricksNormalTexture}
           roughnessMap={bricksRoughnessTexture}
         />

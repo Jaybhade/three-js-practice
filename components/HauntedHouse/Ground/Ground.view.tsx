@@ -3,9 +3,10 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 const Ground = () => {
-    const ghost1 = useRef<THREE.Camera>(null);
-    const ghost2 = useRef<THREE.Camera>(null);
-    const ghost3 = useRef<THREE.Camera>(null);
+  const ghost1 = useRef<THREE.Camera>(null);
+  const ghost2 = useRef<THREE.Camera>(null);
+  const ghost3 = useRef<THREE.Camera>(null);
+  const groundGeometryRef = useRef<THREE.PlaneGeometry>(null);
 
   const [
     grassColorTexture,
@@ -20,20 +21,28 @@ const Ground = () => {
   ]);
 
   useEffect(() => {
-    grassColorTexture.repeat.set(8, 8);
-    grassAmbientOcclusionTexture.repeat.set(8, 8);
-    grassNormalTexture.repeat.set(8, 8);
-    grassRoughnessTexture.repeat.set(8, 8);
+    const textures = [
+      grassColorTexture,
+      grassAmbientOcclusionTexture,
+      grassNormalTexture,
+      grassRoughnessTexture,
+    ];
 
-    grassColorTexture.wrapS = THREE.RepeatWrapping;
-    grassAmbientOcclusionTexture.wrapS = THREE.RepeatWrapping;
-    grassNormalTexture.wrapS = THREE.RepeatWrapping;
-    grassRoughnessTexture.wrapS = THREE.RepeatWrapping;
+    textures.forEach((texture) => {
+      texture.repeat.set(8, 8);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.generateMipmaps = true;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+    });
 
-    grassColorTexture.wrapT = THREE.RepeatWrapping;
-    grassAmbientOcclusionTexture.wrapT = THREE.RepeatWrapping;
-    grassNormalTexture.wrapT = THREE.RepeatWrapping;
-    grassRoughnessTexture.wrapT = THREE.RepeatWrapping;
+    if (groundGeometryRef.current) {
+      groundGeometryRef.current.setAttribute(
+        "uv2",
+        groundGeometryRef.current.attributes.uv
+      );
+    }
   }, [
     grassColorTexture,
     grassAmbientOcclusionTexture,
@@ -54,22 +63,27 @@ const Ground = () => {
     const ghost2Angle = -elapsedTime * 0.32;
     ghost2.current.position.x = Math.cos(ghost2Angle) * 5;
     ghost2.current.position.z = Math.sin(ghost2Angle) * 5;
-    ghost2.current.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
+    ghost2.current.position.y =
+      Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
 
     const ghost3Angle = -elapsedTime * 0.18;
-    ghost3.current.position.x = Math.cos(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.32));
-    ghost3.current.position.z = Math.sin(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.5));
-    ghost3.current.position.y = Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
+    ghost3.current.position.x =
+      Math.cos(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.32));
+    ghost3.current.position.z =
+      Math.sin(ghost3Angle) * (7 + Math.sin(elapsedTime * 0.5));
+    ghost3.current.position.y =
+      Math.sin(elapsedTime * 4) + Math.sin(elapsedTime * 2.5);
   });
 
   return (
     <group>
       <mesh rotation-x={-Math.PI * 0.5} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+        <planeGeometry ref={groundGeometryRef} args={[20, 20]} />
         <meshStandardMaterial
           side={THREE.DoubleSide}
           map={grassColorTexture}
           aoMap={grassAmbientOcclusionTexture}
+          aoMapIntensity={1}
           normalMap={grassNormalTexture}
           roughnessMap={grassRoughnessTexture}
         />
