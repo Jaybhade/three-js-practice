@@ -22,6 +22,7 @@
     "@types/react": "19",
     "@types/react-dom": "19",
     "@types/three": "0.178.1",
+    "lil-gui": "^0.20.0",
     "tailwindcss": "4",
     "typescript": "5"
   }
